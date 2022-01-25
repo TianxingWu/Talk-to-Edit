@@ -6,3 +6,4 @@ tb_logger/
 download
 download/*
 *.sh
+.idea/

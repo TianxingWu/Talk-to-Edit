@@ -19,9 +19,10 @@ def parse_args():
     """Parses arguments."""
     parser = argparse.ArgumentParser(description='')
     parser.add_argument('--opt', type=str, help='Path to option YAML file.')
-    parser.add_argument('--attr', type=str, help='Attribute to be edited.')
-    parser.add_argument(
-        '--target_val', type=int, help='Target Attribute Value.')
+    # parser.add_argument('--attr', type=str, help='Attribute to be edited.')
+    # parser.add_argument('--target_val', type=int, help='Target Attribute Value.')
+    parser.add_argument('--attrs', nargs='+', type=str, help='Attributes to be edited.')
+    parser.add_argument('--target_vals', nargs='+', type=int, help='Target Attribute Values.')
 
     return parser.parse_args()
 
@@ -90,22 +91,27 @@ def main():
         "Young": start_label[4],
     }
 
-    edit_label = {'attribute': args.attr, 'target_score': args.target_val}
+    # edit_label = {'attribute': args.attr, 'target_score': args.target_val}
+    attributes = args.attrs
+    target_scores = args.target_vals
+    num_edit_types = len(attributes)
 
-    edited_latent_code = None
-    print_intermediate_result = True
-    round_idx = 0
+    print_intermediate_result = False
+    for i in range(num_edit_types):
+        edit_label = {'attribute': attributes[i], 'target_score': target_scores[i]}
+        edited_latent_code = None
+        round_idx = 0
 
-    attribute_dict, exception_mode, latent_code, edited_latent_code = edit_target_attribute(
-        opt, attribute_dict, edit_label, round_idx, latent_code,
-        edited_latent_code, field_model, editing_logger,
-        print_intermediate_result)
+        attribute_dict, exception_mode, latent_code, edited_latent_code = edit_target_attribute(
+            opt, attribute_dict, edit_label, round_idx, latent_code,
+            edited_latent_code, field_model, editing_logger,
+            print_intermediate_result)
 
-    if exception_mode != 'normal':
-        if exception_mode == 'already_at_target_class':
-            editing_logger.info("This attribute is already at the degree that you want. Let's try a different attribute degree or another attribute.")
-        elif exception_mode == 'max_edit_num_reached':
-            editing_logger.info("Sorry, we are unable to edit this attribute. Perhaps we can try something else.")
+        if exception_mode != 'normal':
+            if exception_mode == 'already_at_target_class':
+                editing_logger.info("This attribute is already at the degree that you want. Let's try a different attribute degree or another attribute.")
+            elif exception_mode == 'max_edit_num_reached':
+                editing_logger.info("Sorry, we are unable to edit this attribute. Perhaps we can try something else.")
 
 
 
