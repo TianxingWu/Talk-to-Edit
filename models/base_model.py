@@ -423,6 +423,7 @@ class BaseModel():
     def continuous_editing_with_target(self,
                                        latent_codes,
                                        target_cls,
+                                       target_cls_change,
                                        save_dir,
                                        editing_logger,
                                        edited_latent_code,
@@ -457,8 +458,8 @@ class BaseModel():
                     original_image, start_label, start_score = \
                         self.synthesize_and_predict(edited_latent_code)
 
-            target_attr_label = int(start_label[self.target_attr_idx])
-            target_score = start_score[self.target_attr_idx]
+            target_attr_label = int(start_label[self.target_attr_idx])  # predicted current label of the target attribute
+            target_score = start_score[self.target_attr_idx]  # prediction confidence
 
             # save_name = f'{prefix}_{sample_id:03d}_num_edits_0_class_{target_attr_label}_attr_idx_{self.target_attr_idx}.png'  # noqa
             ### save_image(original_image, f'{save_dir}/{save_name}')
@@ -471,8 +472,17 @@ class BaseModel():
                         f'Sample {sample_id:03d} is not confident, skip.')
                 continue
 
-            # skip images that are already the target class num
+            if target_cls_change is not None:
+                # set target_cls using target_cls_change
+                mid = (self.opt['max_cls_num'] - self.opt['min_cls_num']) / 2.0
+                if target_attr_label <= mid:
+                    target_cls = target_attr_label + target_cls_change
+                else:
+                    target_cls = target_attr_label - target_cls_change
+                print(f'target_cls: {target_cls}')
+
             if target_attr_label == target_cls:
+                # skip images that are already the target class
                 if editing_logger:
                     editing_logger.info(
                         f'Sample {sample_id:03d} is already at the target class, skip.'
@@ -546,6 +556,7 @@ class BaseModel():
                     (target_attr_label > target_cls)) or (
                         (direction == 'negative') and
                         (target_attr_label < target_cls)):
+                    # SITUATION: OVER EDITTING ALREADY
                     if num_edits == 0:
                         saved_label = edited_label
                         saved_latent_code = sample_latent_code
@@ -566,6 +577,7 @@ class BaseModel():
                     break
 
                 if target_attr_label != previous_target_attr_label:
+                    # THE LABEL OF TARGET ATTRIBUTES DOES CHANGE
                     num_edits += 1
 
                 if num_edits > 0:
@@ -627,6 +639,14 @@ class BaseModel():
                         saved_latent_code = start_latent_codes
                         saved_editing_latent_code = start_edited_latent_code
                         saved_score = start_score
+
+                        # #########################
+                        # image_temp = edited_image
+                        # save_name_temp = 'final_stucked.png'
+                        # save_image(image_temp, f'{save_dir}/{save_name_temp}')
+                        # #########################
+
+
                         # save_name = f'{prefix}_{sample_id:03d}_num_edits_1_class_{target_attr_label}_attr_idx_{self.target_attr_idx}.png'  # noqa
                         ### save_image(original_image, f'{save_dir}/{save_name}')
                         # if editing_logger:
@@ -655,5 +675,6 @@ class BaseModel():
                 if editing_logger:
                     editing_logger.info(
                         f'{save_name}: {saved_label}, {saved_score}')
-
+        # import pdb
+        # pdb.set_trace()
         return saved_latent_code, saved_editing_latent_code, saved_label, exception_mode

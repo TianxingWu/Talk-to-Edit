@@ -27,6 +27,7 @@ def edit_target_attribute(opt,
         field_model.continuous_editing_with_target(
             latent_codes=latent_code,
             target_cls=edit_labels['target_score'],
+            target_cls_change=edit_labels['target_score_change'],
             save_dir=opt['path']['visualization'],
             editing_logger=editing_logger,
             edited_latent_code=edited_latent_code,
