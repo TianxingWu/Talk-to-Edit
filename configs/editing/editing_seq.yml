@@ -5,7 +5,7 @@ img_res: 1024 # 128
 # latent code
 #latent_code_path: ./download/editing_data/teaser_latent_code.npz.npy
 #latent_code_index: 38
-latent_code_path: ./download/editing_data/latent_code.npz.npy
+latent_code_path: ./download/editing_data/random_codes_50.npy
 
 # inversion
 inversion:

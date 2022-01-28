@@ -19,7 +19,7 @@ def make_exp_dirs(opt):
         os.makedirs(path_opt.pop('experiments_root'), exist_ok=overwrite)
         os.makedirs(path_opt.pop('models'), exist_ok=overwrite)
     else:
-        os.makedirs(path_opt.pop('results_root'))
+        os.makedirs(path_opt.pop('results_root'), exist_ok=True)
 
 
 def set_random_seed(seed):

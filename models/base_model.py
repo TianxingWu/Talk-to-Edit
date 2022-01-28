@@ -432,11 +432,17 @@ class BaseModel():
                                        display_img=False):
         total_num = latent_codes.shape[0]
 
-        for sample_id in range(total_num):
+        saved_image = None
 
+        for sample_id in range(total_num):
+            # import pdb
+            # pdb.set_trace()
             sample_latent_code = torch.from_numpy(
                 latent_codes[sample_id:sample_id + 1]).to(
                     torch.device('cuda'))
+            # sample_latent_code = latent_codes[sample_id:sample_id + 1]
+            # import pdb
+            # pdb.set_trace()
             start_latent_codes = sample_latent_code
             start_edited_latent_code = edited_latent_code
 
@@ -450,6 +456,8 @@ class BaseModel():
                         sample_latent_code = self.stylegan_gen.get_latent(
                             sample_latent_code)
 
+                # import pdb
+                # pdb.set_trace()
                 with torch.no_grad():
                     original_image, start_label, start_score = \
                         self.synthesize_and_predict(sample_latent_code)
@@ -564,7 +572,7 @@ class BaseModel():
                         save_name = f'{prefix}_{sample_id:03d}_num_edits_{num_edits+1}_class_{target_attr_label}_attr_idx_{self.target_attr_idx}.png'  # noqa
                         saved_image = edited_image
                         saved_score = edited_score
-                        save_image(saved_image, f'{save_dir}/{save_name}')
+                        # save_image(saved_image, f'{save_dir}/{save_name}')
                         if display_img:
                             plt.figure()
                             plt.imshow(mpimg.imread(f'{save_dir}/{save_name}'))
@@ -666,7 +674,7 @@ class BaseModel():
                 saved_editing_latent_code = current_stage_editing_latent_code_list[
                     max_index]
                 save_name = f'{prefix}_{sample_id:03d}_num_edits_{num_edits}_class_{previous_target_attr_label}_attr_idx_{self.target_attr_idx}.png'  # noqa
-                save_image(saved_image, f'{save_dir}/{save_name}')
+                # save_image(saved_image, f'{save_dir}/{save_name}')
                 if display_img:
                     plt.figure()
                     plt.imshow(mpimg.imread(f'{save_dir}/{save_name}'))
@@ -677,4 +685,4 @@ class BaseModel():
                         f'{save_name}: {saved_label}, {saved_score}')
         # import pdb
         # pdb.set_trace()
-        return saved_latent_code, saved_editing_latent_code, saved_label, exception_mode
+        return saved_latent_code, saved_editing_latent_code, saved_label, exception_mode, saved_image

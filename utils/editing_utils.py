@@ -23,7 +23,7 @@ def edit_target_attribute(opt,
     field_model.target_attr_idx = int(opt['attr_to_idx'][edit_attr_name])
     field_model.load_network(opt['pretrained_field'][edit_attr_name])
 
-    latent_code, edited_latent_code, saved_label, exception_mode = \
+    latent_code, edited_latent_code, saved_label, exception_mode, saved_image = \
         field_model.continuous_editing_with_target(
             latent_codes=latent_code,
             target_cls=edit_labels['target_score'],
@@ -44,4 +44,4 @@ def edit_target_attribute(opt,
             pass
         attribute_dict[attr] = new_label
 
-    return attribute_dict, exception_mode, latent_code, edited_latent_code
+    return attribute_dict, exception_mode, latent_code, edited_latent_code, saved_image
