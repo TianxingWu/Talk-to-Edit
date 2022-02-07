@@ -105,7 +105,7 @@ def main():
         save_image(start_image, f'./results/orig/{code_idx}.png')
 
 
-        print(f'\nstart_label: {start_label}, start_score: {start_score}')
+        editing_logger.info(f'\nstart_label: {start_label}, start_score: {start_score}')
 
         # initialize attribtue_dict
         attribute_dict = {
@@ -141,8 +141,8 @@ def main():
             # edited_latent_code = None
             round_idx = 0
 
-            print(f'\ntarget attribute: {attributes[i]} ({attr_to_idx[attributes[i]]})')
-            print(f'current cls: {attribute_dict[attributes[i]]}')
+            editing_logger.info(f'\ntarget attribute: {attributes[i]} ({attr_to_idx[attributes[i]]})')
+            editing_logger.info(f'current cls: {attribute_dict[attributes[i]]}')
             # import pdb
             # pdb.set_trace()
             attribute_dict, exception_mode, latent_code, edited_latent_code, saved_image = edit_target_attribute(
@@ -166,9 +166,9 @@ def main():
         if exception_mode == 'normal':
             good_list.append(code_idx)
 
-    print('\n\n=============================')
-    print('finial good_list:')
-    print(good_list)
+    editing_logger.info('\n\n=============================')
+    editing_logger.info('finial good_list:')
+    editing_logger.info(good_list)
 
     
 if __name__ == '__main__':

@@ -487,7 +487,7 @@ class BaseModel():
                     target_cls = target_attr_label + target_cls_change
                 else:
                     target_cls = target_attr_label - target_cls_change
-                print(f'target_cls: {target_cls}')
+                editing_logger.info(f'target_cls: {target_cls}')
 
             if target_attr_label == target_cls:
                 # skip images that are already the target class
