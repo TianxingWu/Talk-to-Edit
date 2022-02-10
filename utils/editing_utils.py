@@ -24,7 +24,7 @@ def edit_target_attribute(opt,
     field_model.load_network(opt['pretrained_field'][edit_attr_name])
 
     latent_code, edited_latent_code, saved_label, exception_mode, saved_image = \
-        field_model.continuous_editing_with_target(
+        field_model.continuous_editing_with_target_v2(
             latent_codes=latent_code,
             target_cls=edit_labels['target_score'],
             target_cls_change=edit_labels['target_score_change'],
@@ -34,6 +34,30 @@ def edit_target_attribute(opt,
             prefix=f'edit_order_{str(round_idx)}',
             print_intermediate_result=print_intermediate_result,
             display_img=display_img)
+
+
+    # if edit_labels['target_score'] or edit_labels['target_score_change']:  # absolute target / relative target
+    #     latent_code, edited_latent_code, saved_label, exception_mode, saved_image = \
+    #         field_model.continuous_editing_with_target(
+    #             latent_codes=latent_code,
+    #             target_cls=edit_labels['target_score'],
+    #             target_cls_change=edit_labels['target_score_change'],
+    #             save_dir=opt['path']['visualization'],
+    #             editing_logger=editing_logger,
+    #             edited_latent_code=edited_latent_code,
+    #             prefix=f'edit_order_{str(round_idx)}',
+    #             print_intermediate_result=print_intermediate_result,
+    #             display_img=display_img)
+    # else:  # binary target
+    #     latent_code, edited_latent_code, saved_label, exception_mode, saved_image = \
+    #         field_model.continuous_editing_binary(
+    #             latent_codes=latent_code,
+    #             save_dir=opt['path']['visualization'],
+    #             editing_logger=editing_logger,
+    #             edited_latent_code=edited_latent_code,
+    #             prefix=f'edit_order_{str(round_idx)}',
+    #             print_intermediate_result=print_intermediate_result,
+    #             display_img=display_img)
 
     latent_code = latent_code.cpu().numpy()
 

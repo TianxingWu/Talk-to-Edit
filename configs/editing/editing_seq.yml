@@ -34,10 +34,10 @@ replaced_layers_1024: 10
 manual_seed: 2021
 
 # editing configs
-confidence_thresh: 0
+confidence_thresh: 0.4
 max_cls_num: 5
 min_cls_num: 0
-max_trials_num: 100
+max_trials_num: 50
 print_every: False
 transform_z_to_w: False
 
