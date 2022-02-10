@@ -126,13 +126,13 @@ def main():
         else:
             target_scores[0] = 0
         if attribute_dict['Eyeglasses'] == 0:
-            # target_scores[1] = np.random.choice([1, 2, 3])
-            target_scores[1] = np.random.choice([1, 2])
+            target_scores[1] = np.random.choice([1, 2, 3])
+            # target_scores[1] = np.random.choice([1, 2])
         else:
             target_scores[1] = 0
         if attribute_dict['No_Beard'] == 0:
-            # target_scores[2] = np.random.choice([1, 2, 3])
-            target_scores[2] = np.random.choice([1, 2])
+            target_scores[2] = np.random.choice([1, 2, 3])
+            # target_scores[2] = np.random.choice([1, 2])
         else:
             target_scores[2] = 0
         # if attribute_dict['Smiling'] == 0:
@@ -140,8 +140,13 @@ def main():
             # target_scores[3] = np.random.choice([1, 2, 3])
             target_scores[3] = np.random.choice([2, 3])
         else:
+            if attribute_dict['Smiling'] >= 3:
+                target_scores[3] = 1
+            else:
+                target_scores[3] = np.random.choice([0, 1])
             # target_scores[3] = 0
-            target_scores[3] = 1
+            # target_scores[3] = 1
+            # target_scores[3] = np.random.choice([0, 1])
         if attribute_dict['Young'] <= 2:
             target_scores[4] = np.random.choice([3, 4, 5])
         else:
@@ -169,7 +174,7 @@ def main():
                 round_idx = 0
 
                 editing_logger.info(f'\ntarget attribute: {attributes[i]} ({attr_to_idx[attributes[i]]})')
-                editing_logger.info(f'current cls: {attribute_dict[attributes[i]]}')
+                editing_logger.info(f'current cls: {attribute_dict_temp[attributes[i]]}')
                 editing_logger.info(f'target cls: {target_scores[i]}')
 
                 attribute_dict_temp, exception_mode, latent_code, edited_latent_code, saved_image = edit_target_attribute(
@@ -191,7 +196,14 @@ def main():
                         editing_logger.info(f"confidence_low about edited result. <Skip sample #{code_idx}>")
                         break
 
-                str_edit_types = '-'.join([attributes[k] for k in edit_idx_seq[:j+1]])
+                # str_edit_types = '-'.join([attributes[k] for k in edit_idx_seq[:j+1]])
+                str_edit_types = []
+                for k in edit_idx_seq[:j+1]:
+                    if attributes[k] == 'No_Beard':
+                        str_edit_types.append('Beard')
+                    else:
+                        str_edit_types.append(attributes[k])
+                str_edit_types = '-'.join(str_edit_types)
                 save_image_path = f'./results/{str_edit_types}'
                 os.makedirs(save_image_path, exist_ok=True)
                 if saved_image is not None:
