@@ -59,8 +59,7 @@ def main():
 
     # ---------- load latent code ----------
     random_codes = np.load(opt['latent_code_path'])
-
-    os.makedirs('./results/orig', exist_ok=True)
+    os.makedirs(os.path.join(opt["path"]["results_root"], 'orig'), exist_ok=True)
     good_list = []
 
     target_scores = None
@@ -74,8 +73,7 @@ def main():
         editing_logger.info("No input target_vals or target_val_changes, start binary editing.")
 
     # editing order
-    edit_idx_seqs = np.array([[0, 3, 4, 2, 1],
-                              [3, 0, 4, 2, 1]])
+    edit_idx_seqs = np.array(opt['edit_idx_seqs'])
 
     # attributes = args.attrs
     attributes = ['Bangs', 'Eyeglasses', 'No_Beard', 'Smiling', 'Young']
@@ -94,7 +92,8 @@ def main():
                 field_model.synthesize_and_predict(torch.from_numpy(latent_code_orig).to(torch.device('cuda')))  # noqa
 
         # select confident images
-        if np.any(np.array(start_score) < opt['confidence_thresh']):
+        # if np.any(np.array(start_score) < opt['confidence_thresh']):
+        if np.any(np.array(start_score) < opt['confidence_thresh_input']):
             editing_logger.info(f"Not confident about original attribute class. <SKIP #{code_idx}>")
             continue
 
@@ -117,7 +116,7 @@ def main():
             continue
 
         # save_image(start_image, f'{opt["path"]["visualization"]}/start_image.png')
-        save_image(start_image, f'./results/orig/{code_idx}.png')
+        save_image(start_image, os.path.join(opt["path"]["results_root"], 'orig', f'{code_idx}.png'))
 
         target_scores = [None, None, None, None, None]
         if attribute_dict['Bangs'] == 0:
@@ -204,10 +203,10 @@ def main():
                     else:
                         str_edit_types.append(attributes[k])
                 str_edit_types = '-'.join(str_edit_types)
-                save_image_path = f'./results/{str_edit_types}'
+                save_image_path = os.path.join(opt["path"]["results_root"], f'{str_edit_types}')
                 os.makedirs(save_image_path, exist_ok=True)
                 if saved_image is not None:
-                    save_image(saved_image, f'{save_image_path}/{code_idx}.png')
+                    save_image(saved_image, f'{save_image_path}/{code_idx:06d}.png')
 
         if exception_mode == 'normal':
             good_list.append(code_idx)

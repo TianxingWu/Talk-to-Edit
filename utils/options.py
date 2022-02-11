@@ -67,8 +67,11 @@ def parse(opt_path, is_train=True):
 
     # paths
     opt['path'] = {}
-    opt['path']['root'] = osp.abspath(
-        osp.join(__file__, osp.pardir, osp.pardir))
+    if opt['root'] is None:
+        opt['path']['root'] = osp.abspath(
+            osp.join(__file__, osp.pardir, osp.pardir))
+    else:
+        opt['path']['root'] = opt['root']
     if is_train:
         experiments_root = osp.join(opt['path']['root'], 'experiments',
                                     opt['name'])

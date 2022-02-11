@@ -1,11 +1,15 @@
-name: editing_seq
+root: /mnt/lustre/share/txwu/data/face_edit/ffhq
+name: seq_2_3
+
 
 img_res: 1024 # 128
 
 # latent code
 #latent_code_path: ./download/editing_data/teaser_latent_code.npz.npy
 #latent_code_index: 38
-latent_code_path: ./download/editing_data/random_codes_1000.npy
+latent_code_path: ./download/editing_data/random_codes_50000.npy
+
+edit_idx_seqs: [[1, 3, 2, 0, 4], [2, 0, 4, 1, 3]]
 
 # inversion
 inversion:
@@ -34,6 +38,7 @@ replaced_layers_1024: 10
 manual_seed: 2021
 
 # editing configs
+confidence_thresh_input: 0.7
 confidence_thresh: 0.4
 max_cls_num: 5
 min_cls_num: 0
