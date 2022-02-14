@@ -116,7 +116,7 @@ def main():
             continue
 
         # save_image(start_image, f'{opt["path"]["visualization"]}/start_image.png')
-        save_image(start_image, os.path.join(opt["path"]["results_root"], 'orig', f'{code_idx}.png'))
+        save_image(start_image, os.path.join(opt["path"]["results_root"], 'orig', f'{code_idx:06d}.png'))
 
         target_scores = [None, None, None, None, None]
         if attribute_dict['Bangs'] == 0:

@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-N = 50000
+N = 200000
 
 torch.manual_seed(0)
 
