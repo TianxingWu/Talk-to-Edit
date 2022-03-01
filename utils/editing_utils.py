@@ -1,5 +1,6 @@
 def edit_target_attribute(opt,
                           attribute_dict,
+                          pred_score,
                           edit_labels,
                           round_idx,
                           latent_code,
@@ -23,9 +24,11 @@ def edit_target_attribute(opt,
     field_model.target_attr_idx = int(opt['attr_to_idx'][edit_attr_name])
     field_model.load_network(opt['pretrained_field'][edit_attr_name])
 
-    latent_code, edited_latent_code, saved_label, exception_mode, saved_image = \
-        field_model.continuous_editing_with_target_v2(
+    latent_code, edited_latent_code, saved_label, saved_score, exception_mode, saved_image = \
+        field_model.continuous_editing_with_target_v3(
             latent_codes=latent_code,
+            current_label=list(attribute_dict.values()),
+            current_score=pred_score,
             target_cls=edit_labels['target_score'],
             target_cls_change=edit_labels['target_score_change'],
             save_dir=opt['path']['visualization'],
@@ -33,7 +36,19 @@ def edit_target_attribute(opt,
             edited_latent_code=edited_latent_code,
             prefix=f'edit_order_{str(round_idx)}',
             print_intermediate_result=print_intermediate_result,
-            display_img=display_img)
+            display_img=display_img,)
+
+    # latent_code, edited_latent_code, saved_label, exception_mode, saved_image = \
+    #     field_model.continuous_editing_with_target_v2(
+    #         latent_codes=latent_code,
+    #         target_cls=edit_labels['target_score'],
+    #         target_cls_change=edit_labels['target_score_change'],
+    #         save_dir=opt['path']['visualization'],
+    #         editing_logger=editing_logger,
+    #         edited_latent_code=edited_latent_code,
+    #         prefix=f'edit_order_{str(round_idx)}',
+    #         print_intermediate_result=print_intermediate_result,
+    #         display_img=display_img)
 
 
     # if edit_labels['target_score'] or edit_labels['target_score_change']:  # absolute target / relative target
@@ -68,4 +83,4 @@ def edit_target_attribute(opt,
             pass
         attribute_dict[attr] = new_label
 
-    return attribute_dict, exception_mode, latent_code, edited_latent_code, saved_image
+    return attribute_dict, saved_score, exception_mode, latent_code, edited_latent_code, saved_image

@@ -957,8 +957,11 @@ class BaseModel():
         # pdb.set_trace()
         return saved_latent_code, saved_editing_latent_code, saved_label, exception_mode, saved_image
 
-    def continuous_editing_with_target_v2(self,
+
+    def continuous_editing_with_target_v3(self,
                                        latent_codes,
+                                       current_label,
+                                       current_score,
                                        target_cls,
                                        target_cls_change,
                                        save_dir,
@@ -974,6 +977,7 @@ class BaseModel():
         saved_latent_code = None
         saved_editing_latent_code = None
         saved_label = None
+        saved_score = None
         exception_mode= 'normal'
 
         for sample_id in range(total_num):
@@ -981,20 +985,23 @@ class BaseModel():
             start_latent_codes = sample_latent_code
             start_edited_latent_code = edited_latent_code
 
-            # synthesize
-            if edited_latent_code is None:
-                if self.latent_code_is_w_space and self.transform_z_to_w:
-                    # translate original z space latent code to w space
-                    with torch.no_grad():
-                        sample_latent_code = self.stylegan_gen.get_latent(sample_latent_code)
-
-                with torch.no_grad():
-                    original_image, start_label, start_score = \
-                        self.synthesize_and_predict(sample_latent_code)
-            else:
-                with torch.no_grad():
-                    original_image, start_label, start_score = \
-                        self.synthesize_and_predict(edited_latent_code)
+            # # synthesize(有冗余)
+            # if edited_latent_code is None:
+            #     if self.latent_code_is_w_space and self.transform_z_to_w:
+            #         # translate original z space latent code to w space
+            #         with torch.no_grad():
+            #             sample_latent_code = self.stylegan_gen.get_latent(sample_latent_code)
+            #
+            #     with torch.no_grad():
+            #         original_image, start_label, start_score = \
+            #             self.synthesize_and_predict(sample_latent_code)
+            # else:
+            #     with torch.no_grad():
+            #         original_image, start_label, start_score = \
+            #             self.synthesize_and_predict(edited_latent_code)
+            #
+            # assert edited_latent_code is not None
+            start_label, start_score = current_label, current_score
 
             target_attr_label = int(start_label[self.target_attr_idx])  # predicted current label of the target attribute
             target_score = start_score[self.target_attr_idx]  # prediction confidence
@@ -1091,9 +1098,9 @@ class BaseModel():
                         saved_latent_code = sample_latent_code
                         saved_editing_latent_code = edited_latent_code
                         best_score = target_attr_score
-                        if editing_logger:
-                            editing_logger.info(
-                                f'Trial {num_trials}: {saved_label}, {saved_score}')
+                        # if editing_logger:
+                        #     editing_logger.info(
+                        #         f'Trial {num_trials}: {saved_label}, {saved_score}')
                     if target_attr_label >= self.opt['confidence_thresh']:
                         break
 
@@ -1105,13 +1112,174 @@ class BaseModel():
                     saved_score = edited_score
                     saved_latent_code = sample_latent_code
                     saved_editing_latent_code = edited_latent_code
-                    if editing_logger:
-                        editing_logger.info(
-                            f'Trial {num_trials}: {saved_label}, {saved_score}')
+                    # if editing_logger:
+                    #     editing_logger.info(
+                    #         f'Trial {num_trials}: {saved_label}, {saved_score}')
                     if target_attr_label >= self.opt['confidence_thresh']:
                         break
 
             if target_attr_score < self.opt['confidence_thresh']:
                 exception_mode = 'confidence_low'
 
-        return saved_latent_code, saved_editing_latent_code, saved_label, exception_mode, saved_image
+        return saved_latent_code, saved_editing_latent_code, saved_label, saved_score, exception_mode, saved_image
+
+
+def continuous_editing_with_target_v2(self,
+                                      latent_codes,
+                                      target_cls,
+                                      target_cls_change,
+                                      save_dir,
+                                      editing_logger,
+                                      edited_latent_code,
+                                      prefix,
+                                      print_intermediate_result=False,
+                                      display_img=False):
+    total_num = latent_codes.shape[0]
+
+    saved_image = None
+    saved_latent_code = None
+    saved_editing_latent_code = None
+    saved_label = None
+    exception_mode = 'normal'
+
+    for sample_id in range(total_num):
+        sample_latent_code = torch.from_numpy(latent_codes[sample_id:sample_id + 1]).to(torch.device('cuda'))
+        start_latent_codes = sample_latent_code
+        start_edited_latent_code = edited_latent_code
+
+        # synthesize
+        if edited_latent_code is None:
+            if self.latent_code_is_w_space and self.transform_z_to_w:
+                # translate original z space latent code to w space
+                with torch.no_grad():
+                    sample_latent_code = self.stylegan_gen.get_latent(sample_latent_code)
+
+            with torch.no_grad():
+                _, start_label, start_score = \
+                    self.synthesize_and_predict(sample_latent_code)
+        else:
+            with torch.no_grad():
+                _, start_label, start_score = \
+                    self.synthesize_and_predict(edited_latent_code)
+
+        target_attr_label = int(start_label[self.target_attr_idx])  # predicted current label of the target attribute
+        target_score = start_score[self.target_attr_idx]  # prediction confidence
+
+        # # skip images with low confidence
+        # if target_score < self.opt['confidence_thresh']:
+        #     if editing_logger:
+        #         editing_logger.info(
+        #             f'Sample {sample_id:03d} is not confident, skip.')
+        #     continue
+
+        #################
+        if target_cls_change is not None:
+            # set target_cls using target_cls_change
+            mid = (self.opt['max_cls_num'] - self.opt['min_cls_num']) / 2.0
+            if target_attr_label <= mid:
+                target_cls = target_attr_label + target_cls_change
+            else:
+                target_cls = target_attr_label - target_cls_change
+            editing_logger.info(f'target cls: {target_cls}')
+        #################
+
+        if target_attr_label == target_cls:
+            # skip images that are already the target class
+            if editing_logger:
+                editing_logger.info(
+                    f'Sample {sample_id:03d} is already at the target class, skip.'
+                )
+            # return the exactly the input image and input latent codes
+            saved_label = start_label
+            saved_latent_code = start_latent_codes
+            saved_editing_latent_code = start_edited_latent_code
+            saved_score = start_score
+            exception_mode = 'already_at_target_class'
+            continue
+        elif target_attr_label < target_cls:
+            direction = 'positive'
+            alpha = 1
+        elif target_attr_label > target_cls:
+            direction = 'negative'
+            alpha = -1
+
+        if self.fix_layers:
+            if edited_latent_code is None:
+                edited_latent_code = sample_latent_code.unsqueeze(1).repeat(1, self.w_space_channel_num, 1)
+
+        best_score = 0
+        num_trials = 0
+        previous_target_attr_label = target_attr_label
+
+        ############################################################################################
+        while ((direction == 'positive') and (target_attr_label <= target_cls) and (
+                target_attr_label < self.opt['max_cls_num'])) or \
+                ((direction == 'negative') and (target_attr_label >= target_cls) and (
+                        target_attr_label > self.opt['min_cls_num'])):
+
+            num_trials += 1
+
+            if num_trials > self.opt['max_trials_num']:
+                saved_label = start_label
+                saved_score = start_score
+                saved_latent_code = start_latent_codes
+                saved_editing_latent_code = start_edited_latent_code
+                exception_mode = 'max_edit_num_reached'
+                break
+
+            with torch.no_grad():
+                # modify sampled latent code
+                if self.fix_layers:
+                    # for fix layers, the input to the field_function is w
+                    # space, but the input to the stylegan is w plus space
+                    edited_dict = self.modify_latent_code_bidirection(sample_latent_code, edited_latent_code, alpha)
+                    sample_latent_code = sample_latent_code + alpha * edited_dict['field']
+                    edited_latent_code = edited_dict['edited_latent_code']
+                else:
+                    # for other modes, the input to the field function and
+                    # stylegan are same (both w space or z space)
+                    edited_dict = self.modify_latent_code_bidirection(latent_code_w=sample_latent_code, alpha=1)
+                    sample_latent_code = edited_dict['edited_latent_code']
+
+                edited_image, edited_label, edited_score = self.synthesize_and_predict(
+                    edited_dict['edited_latent_code'])  # noqa
+
+            target_attr_label = edited_label[self.target_attr_idx]
+            target_attr_score = edited_score[self.target_attr_idx]
+
+            # if target_attr_label != previous_target_attr_label:  # reset if changes occur
+            #     num_trials = 0
+            previous_target_attr_label = target_attr_label
+
+            if target_attr_label == target_cls:
+                if target_attr_score > best_score:
+                    saved_image = edited_image
+                    saved_label = edited_label
+                    saved_score = edited_score
+                    saved_latent_code = sample_latent_code
+                    saved_editing_latent_code = edited_latent_code
+                    best_score = target_attr_score
+                    if editing_logger:
+                        editing_logger.info(
+                            f'Trial {num_trials}: {saved_label}, {saved_score}')
+                if target_attr_label >= self.opt['confidence_thresh']:
+                    break
+
+            elif ((direction == 'positive') and (target_attr_label > target_cls)) or \
+                    ((direction == 'negative') and (target_attr_label < target_cls)):
+                # if target_attr_score >= self.opt['confidence_thresh']:
+                saved_image = edited_image
+                saved_label = edited_label
+                saved_score = edited_score
+                saved_latent_code = sample_latent_code
+                saved_editing_latent_code = edited_latent_code
+                if editing_logger:
+                    editing_logger.info(
+                        f'Trial {num_trials}: {saved_label}, {saved_score}')
+                if target_attr_label >= self.opt['confidence_thresh']:
+                    break
+
+        if target_attr_score < self.opt['confidence_thresh']:
+            exception_mode = 'confidence_low'
+
+    return saved_latent_code, saved_editing_latent_code, saved_label, exception_mode, saved_image

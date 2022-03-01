@@ -304,6 +304,218 @@ def main():
                   editing_logger,
                   save_image_paths,
                   max_per_edit=5000)
+    #
+    #
+    #
+    #
+    # for code_idx in tqdm(range(len(random_codes))):
+    #     editing_logger.info(f"================================================================== #{code_idx}")
+    #     # ---------- get orig latent_code ----------
+    #     random_code = random_codes[code_idx, :]
+    #     random_code = torch.from_numpy(random_code).to(torch.device('cuda'))
+    #     with torch.no_grad():
+    #         latent_code_orig = field_model.stylegan_gen.get_latent(random_code)
+    #     latent_code_orig = latent_code_orig.cpu().numpy()
+    #
+    #     # ---------- synthesize images and predict label ----------
+    #     with torch.no_grad():
+    #         start_image, start_label, start_score = \
+    #             field_model.synthesize_and_predict(torch.from_numpy(latent_code_orig).to(torch.device('cuda')))
+    #     # select confident images (only in base edit)
+    #     if np.any(np.array(start_score) < opt['confidence_thresh_input']):
+    #         editing_logger.info(f"Not confident about original attribute class. <SKIP>")
+    #         continue
+    #     # initialize attribute_dict
+    #     attribute_dict = {
+    #         "Bangs": start_label[0],
+    #         "Eyeglasses": start_label[1],
+    #         "No_Beard": start_label[2],
+    #         "Smiling": start_label[3],
+    #         "Young": start_label[4],
+    #     }
+    #     # restrictions (only in base edit)
+    #     if attribute_dict['Bangs'] > 5 or \
+    #         attribute_dict['Eyeglasses'] > 3 or \
+    #         attribute_dict['No_Beard'] > 3 or \
+    #         attribute_dict['Smiling'] > 4 or \
+    #         attribute_dict['Young'] > 5:
+    #         editing_logger.info(f"Restricted original attribute class. <Skip sample #{code_idx}>")
+    #         continue
+    #
+    #     # ---------- set edit target ----------
+    #     if target_scores is None:
+    #         target_scores = [None, None, None, None, None]
+    #         target_scores = set_target_scores(target_scores, attribute_dict, {base_edit_idx})
+    #
+    #     # ---------- operate base edit ----------
+    #     latent_code = latent_code_orig
+    #     edited_latent_code = None
+    #     # attribute_dict_temp = attribute_dict  # ????
+    #     # pred_score_temp = start_score   # ?????
+    #     editing_logger.info(f'\nstart_label: {start_label}, start_score: {start_score}')
+    #
+    #     i = base_edit_idx
+    #     edit_label = {'attribute': idx_to_attr[i], 'target_score': target_scores[i], 'target_score_change': None}
+    #
+    #     round_idx = 0
+    #     editing_logger.info(f'current cls: {attribute_dict_temp[idx_to_attr[i]]}')
+    #     editing_logger.info(f'target cls: {target_scores[i]}')
+    #
+    #     attribute_dict_temp, pred_score_temp, exception_mode, latent_code, edited_latent_code, saved_image = edit_target_attribute(
+    #         opt, attribute_dict, start_score, edit_label, round_idx, latent_code,
+    #         edited_latent_code, field_model, editing_logger,
+    #         print_intermediate_result)
+    #
+    #     # ---------- save results with no exception ----------
+    #     if exception_mode != 'normal':
+    #         if exception_mode == 'already_at_target_class':
+    #             editing_logger.info(f"already_at_target_class. <Skip>")
+    #             break  ############################
+    #         elif exception_mode == 'max_edit_num_reached':
+    #             editing_logger.info(f"max_edit_num_reached. <Skip>")
+    #             break
+    #         elif exception_mode == 'current_class_not_clear':
+    #             editing_logger.info(f"current_class_not_clear. <Skip>")
+    #             break
+    #         elif exception_mode == 'confidence_low':
+    #             editing_logger.info(f"confidence_low. <Skip>")
+    #             break
+    #
+    #     # str_edit_types = '-'.join([idx_to_attr[k] for k in edit_idx_seq[:j+1]])
+    #     str_edit_types = []
+    #     for k in edit_idx_seq[:j + 1]:
+    #         if idx_to_attr[k] == 'No_Beard':
+    #             str_edit_types.append('Beard')
+    #         else:
+    #             str_edit_types.append(idx_to_attr[k])
+    #     str_edit_types = '-'.join(str_edit_types)
+    #     save_image_path = os.path.join(opt["path"]["results_root"], f'{str_edit_types}')
+    #     os.makedirs(save_image_path, exist_ok=True)
+    #     if saved_image is not None:
+    #         save_image(saved_image, f'{save_image_path}/{code_idx:06d}.png')
+    #
+    # if exception_mode == 'normal':
+    #     good_list.append(code_idx)
+    #
+    # editing_logger.info('\n\n=============================')
+    # editing_logger.info('finial good_list:')
+    # editing_logger.info(good_list)
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    # good_list = []
+    # for code_idx in tqdm(range(len(random_codes))):
+    #     editing_logger.info(f"================================================================== #{code_idx}")
+    #     random_code = random_codes[code_idx, :]
+    #     random_code = torch.from_numpy(random_code).to(torch.device('cuda'))
+    #     with torch.no_grad():
+    #         latent_code_orig = field_model.stylegan_gen.get_latent(random_code)
+    #     latent_code_orig = latent_code_orig.cpu().numpy()
+    #
+    #     # ---------- synthesize images ----------
+    #     with torch.no_grad():
+    #         start_image, start_label, start_score = \
+    #             field_model.synthesize_and_predict(torch.from_numpy(latent_code_orig).to(torch.device('cuda')))  # noqa
+    #
+    #     # select confident images
+    #     # if np.any(np.array(start_score) < opt['confidence_thresh']):
+    #     if np.any(np.array(start_score) < opt['confidence_thresh_input']):
+    #         editing_logger.info(f"Not confident about original attribute class. <SKIP #{code_idx}>")
+    #         continue
+    #
+    #     # initialize attribute_dict
+    #     attribute_dict = {
+    #         "Bangs": start_label[0],
+    #         "Eyeglasses": start_label[1],
+    #         "No_Beard": start_label[2],
+    #         "Smiling": start_label[3],
+    #         "Young": start_label[4],
+    #     }
+    #
+    #     # restrictions ????????????????? or in base_model.py ?
+    #     if attribute_dict['Bangs'] > 5 or \
+    #         attribute_dict['Eyeglasses'] > 3 or \
+    #         attribute_dict['No_Beard'] > 3 or \
+    #         attribute_dict['Smiling'] > 4 or \
+    #         attribute_dict['Young'] > 5:
+    #         editing_logger.info(f"Restricted original attribute class. <Skip sample #{code_idx}>")
+    #         continue
+    #
+    #     save_image(start_image, os.path.join(opt["path"]["results_root"], 'orig', f'{code_idx:06d}.png'))
+    #
+    #     if target_scores is None:
+    #         target_scores = [None, None, None, None, None]
+    #         target_scores = set_target_scores(target_scores, attribute_dict, set(edit_idx_seq))
+    #
+    #
+    #
+    #
+    #     for edit_idx_seq in edit_idx_seqs:
+    #         latent_code = latent_code_orig.copy()
+    #         edited_latent_code = None
+    #         # import pdb
+    #         # pdb.set_trace()
+    #         attribute_dict_temp = copy.deepcopy(attribute_dict)  # attribute class changing
+    #         pred_score_temp = copy.deepcopy(pred_score)
+    #         editing_logger.info(f'\nstart_label: {start_label}, start_score: {start_score}')
+    #         for j in range(len(edit_idx_seq)):
+    #             i = edit_idx_seq[j]
+    #             if target_scores:  # absolute target
+    #                 edit_label = {'attribute': idx_to_attr[i], 'target_score': target_scores[i], 'target_score_change': None}
+    #             elif target_score_changes:  # relative target
+    #                 edit_label = {'attribute': idx_to_attr[i], 'target_score': None, 'target_score_change': target_score_changes[i]}
+    #             else:  # binary target
+    #                 edit_label = {'attribute': idx_to_attr[i], 'target_score': None, 'target_score_change': None}
+    #             # edited_latent_code = None
+    #             round_idx = 0
+    #
+    #             editing_logger.info(f'\ntarget attribute: {idx_to_attr[i]} ({i})')
+    #             editing_logger.info(f'current cls: {attribute_dict_temp[idx_to_attr[i]]}')
+    #             editing_logger.info(f'target cls: {target_scores[i]}')
+    #
+    #             attribute_dict_temp, pred_score_temp, exception_mode, latent_code, edited_latent_code, saved_image = edit_target_attribute(
+    #                 opt, attribute_dict_temp, pred_score_temp, edit_label, round_idx, latent_code,
+    #                 edited_latent_code, field_model, editing_logger,
+    #                 print_intermediate_result)
+    #
+    #             if exception_mode != 'normal':
+    #                 if exception_mode == 'already_at_target_class':
+    #                     editing_logger.info(f"already_at_target_class. <Skip sample #{code_idx}>")
+    #                     break  ############################
+    #                 elif exception_mode == 'max_edit_num_reached':
+    #                     editing_logger.info(f"max_edit_num_reached. <Skip sample #{code_idx}>")
+    #                     break
+    #                 elif exception_mode == 'current_class_not_clear':
+    #                     editing_logger.info(f"current_class_not_clear. <Skip sample #{code_idx}>")
+    #                     break
+    #                 elif exception_mode == 'confidence_low':
+    #                     editing_logger.info(f"confidence_low about edited result. <Skip sample #{code_idx}>")
+    #                     break
+    #
+    #             # str_edit_types = '-'.join([idx_to_attr[k] for k in edit_idx_seq[:j+1]])
+    #             str_edit_types = []
+    #             for k in edit_idx_seq[:j+1]:
+    #                 if idx_to_attr[k] == 'No_Beard':
+    #                     str_edit_types.append('Beard')
+    #                 else:
+    #                     str_edit_types.append(idx_to_attr[k])
+    #             str_edit_types = '-'.join(str_edit_types)
+    #             save_image_path = os.path.join(opt["path"]["results_root"], f'{str_edit_types}')
+    #             os.makedirs(save_image_path, exist_ok=True)
+    #             if saved_image is not None:
+    #                 save_image(saved_image, f'{save_image_path}/{code_idx:06d}.png')
+    #
+    #     if exception_mode == 'normal':
+    #         good_list.append(code_idx)
+    #
+    # editing_logger.info('\n\n=============================')
+    # editing_logger.info('finial good_list:')
+    # editing_logger.info(good_list)
 
     
 if __name__ == '__main__':
