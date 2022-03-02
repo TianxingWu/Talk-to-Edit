@@ -1026,10 +1026,10 @@ class BaseModel():
 
             if target_attr_label == target_cls:
                 # skip images that are already the target class
-                if editing_logger:
-                    editing_logger.info(
-                        f'Sample {sample_id:03d} is already at the target class, skip.'
-                    )
+                # if editing_logger:
+                #     editing_logger.info(
+                #         f'Sample {sample_id:03d} is already at the target class, skip.'
+                #     )
                 # return the exactly the input image and input latent codes
                 saved_label = start_label
                 saved_latent_code = start_latent_codes

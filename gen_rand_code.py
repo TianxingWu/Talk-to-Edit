@@ -1,8 +1,8 @@
 import numpy as np
 import torch
-N = 200000
+N = 1000
 
-torch.manual_seed(0)
+torch.manual_seed(10032)
 
 random_codes = torch.randn(N, 1, 512)
 random_codes = random_codes.numpy()

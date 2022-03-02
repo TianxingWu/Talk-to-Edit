@@ -97,7 +97,10 @@ def parse(opt_path, is_train=True):
                     'val_latent_dir'] = f'{input_latent_dir}/train_subset'
     else:  # test
         # results_root = osp.join(opt['path']['root'], 'results', opt['name'])
-        results_root = osp.join(opt['path']['root'], 'attribute_editing_images', opt['name'])
+        if opt['experiment_type'] == 'editing':
+            results_root = osp.join(opt['path']['root'], 'attribute_editing_images', opt['name'])
+        elif opt['experiment_type'] == 'recovering':
+            results_root = osp.join(opt['path']['root'], 'recovering', opt['name'])
         opt['path']['results_root'] = results_root
         opt['path']['log'] = results_root
         opt['path']['visualization'] = osp.join(results_root, 'visualization')
